@@ -1,6 +1,9 @@
 const express = require("express");
 const app = express();
 
+const cors = require("cors");
+app.use(cors());
+
 app.use(express.json())
 
 const mongodb = require("mongodb");
@@ -61,7 +64,7 @@ app.post("/login", async(req,res)=>{
                 const compare = await hashCompare(password, user.password);
                 if(compare){
                     const token = await createJWT({email,id:user._id,role:user.role});
-                    return res.status(200).json({token})
+                    return res.status(200).json({token,user})
                 }
             }
             client.close()
@@ -92,7 +95,7 @@ app.post("/add-product",authenticate,async(req,res)=>{
     }
 })
 
-app.get("/all-products",async(req,res)=>{
+app.get("/all-products",authenticate,async(req,res)=>{
     const client = await mongoClient.connect(dbUrl);
     if(client){
         try {
